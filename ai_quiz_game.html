@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Think Like an AI — Quiz</title>
+<style>
+  :root {
+    --midnight: #0F1B3C;
+    --deep-blue: #065A82;
+    --teal: #1C7293;
+    --ice: #EAF3F8;
+    --white: #FFFFFF;
+    --amber: #F2A72B;
+    --slate: #5A6B7A;
+    --green: #2E9E6B;
+    --red: #D9534F;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: Calibri, Arial, sans-serif;
+    background: var(--midnight);
+    color: var(--white);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .app {
+    width: 100%;
+    max-width: 760px;
+  }
+  .header {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .eyebrow {
+    color: var(--amber);
+    font-size: 13px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  h1 {
+    font-family: Cambria, "Times New Roman", serif;
+    font-size: 30px;
+    margin: 0 0 6px 0;
+  }
+  .subtitle {
+    color: var(--ice);
+    font-size: 14px;
+    font-style: italic;
+    opacity: 0.85;
+  }
+  .presenter {
+    color: var(--amber);
+    font-size: 13px;
+    font-weight: bold;
+    margin-top: 10px;
+    letter-spacing: 0.5px;
+  }
+  .progress-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0;
+  }
+  .progress-track {
+    flex: 1;
+    height: 8px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--teal);
+    border-radius: 4px;
+    transition: width 0.35s ease;
+    width: 0%;
+  }
+  .progress-label {
+    font-size: 13px;
+    color: var(--ice);
+    white-space: nowrap;
+  }
+  .card {
+    background: var(--deep-blue);
+    border-radius: 14px;
+    padding: 28px 28px 24px 28px;
+  }
+  .q-tag {
+    font-size: 12px;
+    color: var(--amber);
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .q-text {
+    font-size: 19px;
+    line-height: 1.4;
+    margin-bottom: 20px;
+  }
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .option {
+    background: rgba(255,255,255,0.06);
+    border: 1.5px solid rgba(255,255,255,0.18);
+    border-radius: 10px;
+    padding: 13px 16px;
+    text-align: left;
+    color: var(--white);
+    font-size: 15px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .option:hover:not(.locked) {
+    border-color: var(--amber);
+    background: rgba(255,255,255,0.1);
+  }
+  .option.selected {
+    border-color: var(--amber);
+    background: rgba(242,167,43,0.12);
+  }
+  .option.correct {
+    border-color: var(--green);
+    background: rgba(46,158,107,0.18);
+  }
+  .option.incorrect {
+    border-color: var(--red);
+    background: rgba(217,83,79,0.18);
+  }
+  .option.locked {
+    cursor: default;
+  }
+  .feedback {
+    margin-top: 18px;
+    padding: 16px 18px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.07);
+    font-size: 14px;
+    line-height: 1.55;
+    display: none;
+  }
+  .feedback.show { display: block; }
+  .feedback-title {
+    font-weight: bold;
+    margin-bottom: 6px;
+    font-size: 15px;
+  }
+  .feedback-title.correct-text { color: var(--green); }
+  .feedback-title.incorrect-text { color: var(--red); }
+  .actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+  }
+  button.primary {
+    background: var(--amber);
+    color: var(--midnight);
+    border: none;
+    padding: 11px 24px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    display: none;
+  }
+  button.primary.show { display: inline-block; }
+  button.primary:hover { opacity: 0.9; }
+
+  .results {
+    display: none;
+    text-align: center;
+  }
+  .results.show { display: block; }
+  .score-circle {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: var(--midnight);
+    border: 6px solid var(--amber);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 10px auto 20px auto;
+  }
+  .score-num {
+    font-size: 36px;
+    font-weight: bold;
+    font-family: Cambria, serif;
+  }
+  .score-out {
+    font-size: 13px;
+    color: var(--ice);
+  }
+  .tier {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 8px;
+    font-family: Cambria, serif;
+  }
+  .tier-desc {
+    font-size: 14px;
+    color: var(--ice);
+    max-width: 480px;
+    margin: 0 auto 22px auto;
+    line-height: 1.5;
+  }
+  button.restart {
+    background: transparent;
+    border: 1.5px solid var(--amber);
+    color: var(--amber);
+    padding: 10px 22px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  button.restart:hover { background: rgba(242,167,43,0.1); }
+
+  @media (max-width: 500px) {
+    .card { padding: 20px; }
+    h1 { font-size: 24px; }
+    .q-text { font-size: 17px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="eyebrow">Introduction to AI</div>
+    <h1>Think Like an AI</h1>
+    <div class="subtitle">10 questions. No memorizing — just reasoning it through.</div>
+    <div class="presenter">Dr. Sarmila K B &middot; AP/AIML &middot; Karunya Institute of Technology and Sciences</div>
+  </div>
+
+  <div id="quizArea">
+    <div class="progress-wrap">
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-label" id="progressLabel">Question 1 of 10</div>
+    </div>
+
+    <div class="card">
+      <div class="q-tag" id="qTag">Scenario</div>
+      <div class="q-text" id="qText"></div>
+      <div class="options" id="optionsWrap"></div>
+      <div class="feedback" id="feedback">
+        <div class="feedback-title" id="feedbackTitle"></div>
+        <div id="feedbackBody"></div>
+      </div>
+      <div class="actions">
+        <button class="primary" id="nextBtn">Next question</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="results" id="resultsArea">
+    <div class="score-circle">
+      <div class="score-num" id="finalScore">0</div>
+      <div class="score-out">out of 10</div>
+    </div>
+    <div class="tier" id="tierTitle"></div>
+    <div class="tier-desc" id="tierDesc"></div>
+    <button class="restart" onclick="restartQuiz()">Take it again</button>
+  </div>
+</div>
+
+<script>
+const questions = [
+  {
+    tag: "Scenario",
+    text: "An AI model is trained only on photos of aircraft turbine blades taken in bright daylight. In the field, it completely fails to spot cracks in blades photographed at night. What's really going on?",
+    options: [
+      "The AI's code is broken and needs debugging",
+      "The model never learned patterns from night-time conditions, so it can't recognize them",
+      "AI cameras can't physically capture images in low light",
+      "The model needs a faster processor to work at night"
+    ],
+    correct: 1,
+    explanation: "This is the core limit of pattern-based learning: a model only knows what it's seen. If night-time images were never part of training, the model has no learned pattern to match against — it isn't 'confused,' it simply has no basis to work from. This is why real-world AI systems need training data that covers the full range of conditions they'll actually face."
+  },
+  {
+    tag: "Concept check",
+    text: "When ChatGPT answers a question, what is it actually doing under the hood?",
+    options: [
+      "Reasoning step-by-step the way a human would",
+      "Searching a database of pre-written human answers",
+      "Predicting the most statistically likely next word, based on patterns in its training data",
+      "Consulting a live internet connection for every reply"
+    ],
+    correct: 2,
+    explanation: "Large language models generate text by predicting the next most probable word, one at a time, based on patterns learned from massive amounts of text. It can feel like reasoning because the patterns are so rich — but there's no step-by-step logical process the way a human works through a problem."
+  },
+  {
+    tag: "Scenario",
+    text: "Two teams train a defect-detection model for the same task. Team A uses 200 labeled images. Team B uses 2 million labeled images of similar quality. Which team's model will most likely perform better in the real world, and why?",
+    options: [
+      "Team A — smaller datasets train faster and avoid confusion",
+      "Team B — more examples generally means better-learned patterns and fewer blind spots",
+      "Neither — dataset size makes no real difference to AI performance",
+      "It's impossible to know without seeing the code"
+    ],
+    correct: 1,
+    explanation: "More high-quality data usually means the model encounters more variation — different lighting, angles, defect types — so it generalizes better to situations it hasn't seen before. This is why 'big data' matters so much in real AI systems, including aerospace applications like satellite image analysis."
+  },
+  {
+    tag: "Concept check",
+    text: "Which of these is the clearest example of narrow AI, as opposed to the general AI seen in science fiction?",
+    options: [
+      "Data from Star Trek, who reasons about any topic like a person",
+      "JARVIS, who holds open-ended conversations and improvises solutions",
+      "A chess-playing AI that can only play chess and nothing else",
+      "Chitti, who adapts to entirely new emotional and physical situations"
+    ],
+    correct: 2,
+    explanation: "Narrow AI is built and trained to do exactly one task extremely well — like play chess, detect cracks, or predict maintenance needs — and has zero capability outside that task. Every sci-fi AI listed here is general AI: reasoning, adapting, and operating across any domain, which doesn't exist in reality yet."
+  },
+  {
+    tag: "Scenario",
+    text: "Mars rovers like Perseverance make many driving decisions completely on their own, without a human at the wheel in real time. Why is this necessary?",
+    options: [
+      "The rover's AI is more intelligent than any human driver",
+      "NASA doesn't have enough staff to control it manually",
+      "Radio signals between Earth and Mars take too long for real-time human control",
+      "It's cheaper to let the rover decide than to pay a human operator"
+    ],
+    correct: 2,
+    explanation: "A round-trip radio signal to Mars can take 10 to 40+ minutes depending on the distance between planets. By the time a human on Earth saw a hazard and sent a correction, the rover could already be in trouble. Autonomy here is a physics-driven necessity, not a sign that the AI 'knows better' than a human."
+  },
+  {
+    tag: "Critical thinking",
+    text: "A bank trains an AI to approve or reject loans using 20 years of the bank's own past decisions as training data. What's the most likely risk?",
+    options: [
+      "The AI will be perfectly fair, since it's just following math",
+      "The AI may learn and repeat any biases that existed in those past human decisions",
+      "The AI will refuse to make any decisions at all",
+      "There is no risk, since AI cannot be biased"
+    ],
+    correct: 1,
+    explanation: "AI learns whatever patterns exist in its training data — including unfair ones. If past human decisions contained bias (against certain neighborhoods, names, or backgrounds, for example), the model can learn and even amplify that same bias at scale. This is one of the most important real-world limitations of AI, and it's central to why AI oversight and fairness testing matter."
+  },
+  {
+    tag: "Concept check",
+    text: "What's the clearest way to describe the difference between narrow AI and general AI?",
+    options: [
+      "Narrow AI is older technology; general AI is newer technology",
+      "Narrow AI does one task well; general AI could reason and adapt across any task, like a human",
+      "Narrow AI runs on computers; general AI runs on the cloud",
+      "There is no real difference — it's just marketing language"
+    ],
+    correct: 1,
+    explanation: "Narrow AI is what exists today: extremely capable within one specific task, but unable to step outside it. General AI is the hypothetical, sci-fi-level capability of reasoning and adapting across any domain the way a human mind can — no such system exists yet, despite how convincing today's AI can seem."
+  },
+  {
+    tag: "Scenario",
+    text: "Even though AI could technically fly most of a commercial flight on its own, full autonomy is deliberately not allowed in commercial aviation. What's the main reason?",
+    options: [
+      "The technology genuinely isn't good enough yet to attempt it",
+      "Airlines want to keep paying pilot salaries",
+      "Safety design requires a human to retain override authority for critical decisions, since the cost of an AI error is catastrophic",
+      "Passengers are legally required to see a human in the cockpit"
+    ],
+    correct: 2,
+    explanation: "This is a deliberate safety and certification choice, not a technology gap. Aerospace systems are built with the assumption that even highly capable automation can fail or encounter something outside its training — so human override stays mandatory for the most critical decisions. It's the same tension dramatized (less carefully) in stories like HAL 9000."
+  },
+  {
+    tag: "Scenario",
+    text: "Imagine millions of dog photos get accidentally mislabeled as 'cat' before training an image-recognition model. What will the trained model most likely do?",
+    options: [
+      "Automatically detect the labeling mistake and correct itself",
+      "Confidently learn the wrong pattern, and call dogs 'cats' in new photos too",
+      "Refuse to train at all until the data is fixed",
+      "Perform exactly the same as if the labels were correct"
+    ],
+    correct: 1,
+    explanation: "A model has no independent way to know the labels are wrong — it simply learns whatever pattern the data shows it, mistakes included. This is the classic 'garbage in, garbage out' problem, and it's exactly why data quality and labeling accuracy matter as much as data quantity."
+  },
+  {
+    tag: "Big picture",
+    text: "Which statement best captures the real difference between traditional software and AI?",
+    options: [
+      "AI is simply a smarter, more advanced version of traditional software",
+      "Traditional software follows rules a programmer wrote; AI learns its own rules from patterns in data",
+      "Traditional software is outdated and no longer used anywhere",
+      "AI has no rules or structure of any kind — it's pure randomness"
+    ],
+    correct: 1,
+    explanation: "This is the foundational distinction for everything else in AI: traditional software executes exactly the logic a human explicitly programmed into it, while AI derives its own internal 'rules' by finding statistical patterns across large amounts of data — which is also exactly why it can behave unpredictably or inherit flaws from that data."
+  }
+];
+
+let current = 0;
+let score = 0;
+let answered = false;
+
+const qTag = document.getElementById('qTag');
+const qText = document.getElementById('qText');
+const optionsWrap = document.getElementById('optionsWrap');
+const feedback = document.getElementById('feedback');
+const feedbackTitle = document.getElementById('feedbackTitle');
+const feedbackBody = document.getElementById('feedbackBody');
+const nextBtn = document.getElementById('nextBtn');
+const progressFill = document.getElementById('progressFill');
+const progressLabel = document.getElementById('progressLabel');
+const quizArea = document.getElementById('quizArea');
+const resultsArea = document.getElementById('resultsArea');
+
+function loadQuestion() {
+  answered = false;
+  const q = questions[current];
+  qTag.textContent = q.tag;
+  qText.textContent = q.text;
+  optionsWrap.innerHTML = '';
+  feedback.classList.remove('show');
+  nextBtn.classList.remove('show');
+
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option';
+    btn.textContent = opt;
+    btn.onclick = () => selectAnswer(i);
+    optionsWrap.appendChild(btn);
+  });
+
+  progressFill.style.width = ((current) / questions.length * 100) + '%';
+  progressLabel.textContent = 'Question ' + (current + 1) + ' of ' + questions.length;
+}
+
+function selectAnswer(i) {
+  if (answered) return;
+  answered = true;
+  const q = questions[current];
+  const opts = optionsWrap.querySelectorAll('.option');
+  opts.forEach((btn, idx) => {
+    btn.classList.add('locked');
+    if (idx === q.correct) btn.classList.add('correct');
+    else if (idx === i) btn.classList.add('incorrect');
+  });
+
+  if (i === q.correct) {
+    score++;
+    feedbackTitle.textContent = 'Correct';
+    feedbackTitle.className = 'feedback-title correct-text';
+  } else {
+    feedbackTitle.textContent = 'Not quite';
+    feedbackTitle.className = 'feedback-title incorrect-text';
+  }
+  feedbackBody.textContent = q.explanation;
+  feedback.classList.add('show');
+  nextBtn.classList.add('show');
+  nextBtn.textContent = (current === questions.length - 1) ? 'See results' : 'Next question';
+}
+
+nextBtn.addEventListener('click', () => {
+  current++;
+  if (current < questions.length) {
+    loadQuestion();
+  } else {
+    showResults();
+  }
+});
+
+function showResults() {
+  progressFill.style.width = '100%';
+  quizArea.style.display = 'none';
+  resultsArea.classList.add('show');
+  document.getElementById('finalScore').textContent = score;
+
+  let tier, desc;
+  if (score >= 9) {
+    tier = "You think like an AI researcher";
+    desc = "You're not just recalling facts — you're reasoning through how data, training, and constraints actually shape what AI can and can't do. That's exactly the mindset real AI and aerospace teams need.";
+  } else if (score >= 6) {
+    tier = "Solid instincts, a few gaps";
+    desc = "You've got the core ideas — pattern recognition over 'thinking,' data quality mattering more than magic. Revisit the ones you missed; they usually hinge on one key distinction.";
+  } else if (score >= 3) {
+    tier = "Sci-fi brain, still forming AI brain";
+    desc = "You're bringing a lot of sci-fi intuition into this, which is a great starting point — now it's about separating what movies show from how real, narrow AI systems actually behave.";
+  } else {
+    tier = "Fresh eyes, lots to build on";
+    desc = "This is exactly why we started with the icebreaker poll — every one of these questions maps to something we're about to unpack. Good news: you're about to see all of these answers make a lot more sense.";
+  }
+  document.getElementById('tierTitle').textContent = tier;
+  document.getElementById('tierDesc').textContent = desc;
+}
+
+function restartQuiz() {
+  current = 0;
+  score = 0;
+  resultsArea.classList.remove('show');
+  quizArea.style.display = 'block';
+  loadQuestion();
+}
+
+loadQuestion();
+</script>
+</body>
+</html>
